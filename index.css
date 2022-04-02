@@ -1,0 +1,14 @@
+*{
+  background-color: black;
+}
+h1{
+  color: blue;
+  text-align: center;
+}
+#canvas_pos{
+  border: 4px solid;
+  border-color: whitesmoke;
+  width: 600px;
+  height: 600px;
+  margin: 0 auto;
+}
