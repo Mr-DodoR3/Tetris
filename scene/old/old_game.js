@@ -64,13 +64,15 @@ function time_UI()
 
 function flamelate()
 {
-  flame++;
-  if (flame > (FPS / 10) * interval)
+  if (control == true)
   {
-    gravity();
-    flame = 0;
+    flame++;
+    if (flame > (FPS / 10) * interval)
+    {
+      y++;
+      flame = 0;
+    }
   }
-  
   display();
 }
 
@@ -85,156 +87,9 @@ function display()
         drawRect((150 + j * 30) + 1, (30 + i * 30) + 1, 28 ,28);
         fillColor(blockColor(blockData[i][j]));
       }
-      else
-      {
-        displayNowblock(i, j)
-      }
     }
   }
-}
-
-function displayNowblock(i, j)
-{
-  for (let k = 0; k < 4; k++)
-  {
-    for (let l = 0; l < 4; l++)
-    {
-      if (i == y + k && j == x + l && shape[k][l] != 0)
-      {
-        drawRect((150 + j * 30) + 1, (30 + i * 30) + 1, 28 ,28);
-        fillColor(blockColor(nowblockType));
-      }
-    }
-  }
-}
-
-function gravity()
-{
-  if (collision(x, y + 1, shape) == 0)
-  {
-    control = true;
-    y++;
-  }
-  else control = false;
-}
-
-function confirm()
-{
-  for (let i = 0; i < 4; i++)
-  {
-    for (let j = 0; j < 4; j++)
-    {
-      if (shape[i][j] != 0 && y >= 0 && y + i < 18)
-      {
-        blockData[y + i][x + j] = shape[i][j];
-        blockData[y + i][x + j] = shape[i][j];
-      }
-    }
-  }
-}
-
-var collision_rotate_val = false;
-function collision(tx, ty, tshape)
-{
-  let condition = 0;//-1 == Error, 0 == Clear
-  for (let i = 0; i < 4; i++)
-  {
-    for (let j = 0; j < 4; j++)
-    {
-      if (ty + i >= 0 && tshape[i][j] != 0)
-      {
-        if (tx + j < 0 || tx + j > 9 || ty + i > 17) condition = -1;
-        else if (blockData[ty + i][tx + j] != 0) condition = -1;
-
-        if (shape != tshape && condition == -1 && collision_rotate_val == false)
-        {
-          condition = collision_rotate(tx, ty, tshape);
-        }
-      }
-    }
-  }
-  
-  return condition;
-}
-
-function collision_rotate(tx, ty, tshape)
-{
-  collision_rotate_val = true;
-  let val = -1;
-  
-  if (collision(tx - 1, ty, tshape) == 0) x -= 1, val = 0;
-  else if (collision(tx + 1, ty, tshape) == 0) x += 1, val = 0;
-  else if (collision(tx, ty - 1, tshape) == 0) y -= 1, val = 0;
-  else if (collision(tx - 2, ty, tshape) == 0) x -= 2, val = 0;
-  else if (collision(tx + 2, ty, tshape) == 0) x += 2, val = 0;
-  else if (collision(tx, ty - 2, tshape) == 0) y -= 2, val = 0;
-  else if (collision(tx - 3, ty, tshape) == 0) x -= 3, val = 0;
-  else if (collision(tx + 3, ty, tshape) == 0) x += 3, val = 0;
-  else if (collision(tx, ty - 3, tshape) == 0) y -= 3, val = 0;
-
-  return val;
-}
-
-function move(key)
-{
-  if (control == false && evacuationAllTime < 100) evacuationTime = 0;
-  switch (key)
-  {
-    case "left":
-      if (collision(x - 1, y, shape) == 0) x--;
-      break;
-    
-    case "right":
-      if (collision(x + 1, y, shape) == 0) x++;
-      break;
-  }
-}
-
-function speedfall(b)
-{
-  interval = (b == true ? 0.2 : 4);
-}
-
-function skip()
-{
-  while (control)
-  {
-    gravity();
-  }
-}
-
-function rotate(direction)
-{
-  if (shape != shape_O)
-  {
-    let shape_temp = [[0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0]];
-
-    for (let i = 0; i < 4; i++)
-    {
-      for (let j = 0; j < 4; j++)
-      {
-        if (direction == "left") shape_temp[i][j] = shape[j][3 - i];
-        else shape_temp[i][j] = shape[3 - j][i];
-      }
-    }
-    collision_rotate_val = false;
-    if (collision(x, y, shape_temp) == 0) shape = shape_temp;
-  }
-}
-
-function gamesetup()
-{
-  timeReset();
-  flame = 0, interval =  4;
-  generation();
-  for (let i = 0; i < blockData.length; i++)
-  {
-    for (let j = 0; j < blockData[0].length; j++)
-    {
-      blockData[i][j] = 0;
-    }
-  }
-  if (DEBUG == true) console.log(blockData);
+  //console.log("display : " + blockData);
 }
 
 function generation()
@@ -274,11 +129,172 @@ function generation()
   //console.log(shape);
 }
 
+function contller()
+{
+  for (let i = 0; i < 4; i++)
+  {
+    for (let j = 0; j < 4; j++)
+    {
+      if (shape[i][j] != 0)
+      {
+        drawRect((150 + x * 30) + j * 30 + 1, (30 + y * 30) + i * 30 + 1, 28 ,28);
+        fillColor(blockColor(nowblockType));
+      }
+    }
+  }
+  collision();
+}
+
+function collision()
+{
+  let onGround = 0;
+  for (let i = 0; i < 4; i++)
+  {
+    for (let j = 0; j < 4; j++)
+    {
+      onGround += fall(i, j);
+    }
+  }
+  control = (onGround == 0 ? true : false);
+}
+
+function fall(i, j)
+{
+  if (shape[i][j] != 0)
+  {
+    if (y + i >= 17) return 1;
+    else if (y + i > -1)
+    {
+      if (blockData[y + i + 1][x + j] != 0) return 1;
+    }
+  }
+  return 0;
+}
+
+function confirmCall()
+{
+  control = false;
+}
+
+function confirm()
+{
+  for (let i = 0; i < 4; i++)
+  {
+    for (let j = 0; j < 4; j++)
+    {
+      //console.log("i:" + i + "回目,j:" + j + "回目");
+      //console.log("y = " + (i + y) + ",x = " + (j + x));
+      if (shape[i][j] != 0 && y >= 0 && y + i < 18)//x >= 0 && x + j < 10 && 
+      {
+        blockData[y + i][x + j] = shape[i][j];
+        blockData[y + i][x + j] = shape[i][j];
+      }
+    }
+  }
+  //console.log(blockData);
+}
+
+function move(key)
+{
+  let moveBan = false;
+  if (control == false && evacuationAllTime < 60) evacuationTime = 0;
+  switch (key)
+  {
+    case "left":
+      for (let i = 0; i < 4; i++)
+      {
+        for (let j = 0; j < 4; j++)
+        {
+          if (shape[i][j] != 0)
+          {
+            if (x + j <= 0) moveBan = true;
+            else if (y + i > -1)
+            {
+              if (blockData[y + i][x + j - 1] != 0) moveBan = true;
+            }
+          }
+        }
+      }
+      if (moveBan == false) x--;
+      break;
+    
+    case "right":
+      for (let i = 0; i < 4; i++)
+      {
+        for (let j = 0; j < 4; j++)
+        {
+          if (shape[i][j] != 0)
+          {
+            if (x + (j + 1) >= 10) moveBan = true;
+            else if (y + i > -1)
+            {
+              if (blockData[y + i][x + j + 1] != 0) moveBan = true;
+            }
+          }
+        }
+      }
+      if (moveBan == false) x++;
+      break;
+  }
+}
+
+function speedfall(b)
+{
+  interval = (b == true ? 0.2 : 4);
+}
+
+function skip()
+{
+  while (control)
+  {
+    y++;
+    collision();
+  }
+}
+
+function rotate(direction)
+{
+  if (shape != shape_O)
+  {
+    let shape_temp = [[0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0]];
+
+    for (let i = 0; i < 4; i++)
+    {
+      for (let j = 0; j < 4; j++)
+      {
+        if (direction == "left") shape_temp[i][j] = shape[j][3 - i];
+        else shape_temp[i][j] = shape[3 - j][i];
+
+        if (j + x < 0) move("right");
+        if (j + x > 9) move("left");
+      }
+    }
+
+    shape = shape_temp;
+  }
+}
+
+function gamesetup()
+{
+  timeReset();
+  flame = 0, interval =  4;
+  generation();
+  for (let i = 0; i < blockData.length; i++)
+  {
+    for (let j = 0; j < blockData[0].length; j++)
+    {
+      blockData[i][j] = 0;
+    }
+  }
+  if (DEBUG == true) console.log(blockData);
+}
+
 function game()
 {
   background("#333333");
   time_UI();
   flamelate();
+  contller();
   if (control == false) 
   {
     evacuationTime++;
