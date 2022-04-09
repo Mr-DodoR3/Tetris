@@ -50,36 +50,58 @@ var shape_J =
 var shape_T = 
 [
   [0, 0, 0, 0],
-  [0, 7, 0, 0],
   [7, 7, 7, 0],
+  [0, 7, 0, 0],
   [0, 0, 0, 0]
 ]
 
-function blockColor(n)
+var shape_C = 
+[
+  [0, 0, 0, 0],
+  [8, 0, 8, 0],
+  [8, 8, 8, 0],
+  [0, 0, 0, 0]
+]
+
+var shape_1 = 
+[
+  [0, 0, 0, 0],
+  [0, 0, 0, 0],
+  [9, 9, 9, 0],
+  [0, 0, 0, 0]
+]
+
+function blockColor(n, edge)
 {
   switch (n)
   {
     case 1:
-      return "#FFFF33"
+      return (edge == false ? "#FFFFCC" : "#FFFF00");
       break;
     case 2:
-      return "#33FFFF"
+      return (edge == false ? "#99FFFF" : "#33FFFF");
       break;
     case 3:
-      return "#FF3333"
+      return (edge == false ? "#FF6666" : "#FF3333");
       break;
     case 4:
-      return "#33FF33"
+      return (edge == false ? "#99FF99" : "#33FF33");
       break;
     case 5:
-      return "#FF9933"
+      return (edge == false ? "#FFCC66" : "#FF9933");
       break;
     case 6:
-      return "#3333FF"
+      return (edge == false ? "#6666FF" : "#3333FF");
       break;
     case 7:
+      return (edge == false ? "#FF99FF" : "#FF33FF");
+      break;
+    case 8:
+      return (edge == false ? "#99ffcc" : "#00ffcc");
+      break;
+    case 9:
     default:
-      return "#FF33FF"
+      return (edge == false ? "#eeeeee" : "#cccccc");
       break;
   }
 }

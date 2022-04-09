@@ -49,6 +49,7 @@ function keyDown(e)
       if (e.keyCode == 32) scene = (mode + 1), gamesetup();
       break;
     case 1:
+      if (e.keyCode == 32 && stock == false) stockTrigger();
       if (e.keyCode == 37) move("left");
       if (e.keyCode == 38) skip();
       if (e.keyCode == 39) move("right");

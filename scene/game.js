@@ -17,12 +17,17 @@ var shape
   [0, 0, 0, 0]
 ];
 var nowblockType;
+var nextBlock = Array(3);
+var stockBlock = -1;
+var stock = false;
 
 var flame;
 var interval;
 
 var evacuationTime;
 var evacuationAllTime;
+
+let lineerase = [-1, -1, -1, -1];
 
 function gamebackground()
 {
@@ -53,6 +58,76 @@ function gamebackground()
   fillColor("#333333");
   drawRect(450, 0, 150, 600);
   fillColor("#333333");
+
+  nextBlockUI();
+}
+
+function nextBlockUI()
+{
+  strokeColor("#33FFFF");
+  ctx.lineWidth = 2;
+
+  drawLine(450, 31, 540, 31), drawStroke();
+  drawLine(540, 31, 540, 120), drawStroke();
+  drawLine(450, 120, 540, 120), drawStroke();
+  
+  drawLine(510, 120, 510, 180), drawStroke();
+  drawLine(450, 180, 510, 180), drawStroke();
+  
+  drawLine(510, 180, 510, 240), drawStroke();
+  drawLine(450, 240, 510, 240), drawStroke();
+  
+  align("left");
+  writeText("N e x t", 455, 46, 15, "#FFFFFF");
+  
+  blockDrawUI(0, 16, "next");
+  blockDrawUI(1, 12, "next");
+  blockDrawUI(2, 12, "next");
+
+  drawLine(60, 31, 150, 31), drawStroke();
+  drawLine(60, 31, 60, 120), drawStroke();
+  drawLine(60, 120, 150, 120), drawStroke();
+  writeText("S T O C K", 65, 46, 14, "#FFFFFF");
+  blockDrawUI(0, 16, false, "stock");
+}
+
+function blockDrawUI(t, s, uitype)
+{
+  let tx, ty;
+  if (uitype == "next")
+  {
+    tx = (t == 0 ? 460 : 456);
+    ty = (t == 0 ? 50 : (t == 1 ? 125 : 185));
+  }
+  else
+  {
+    tx = 70;
+    ty = 50;
+  }
+  for (let i = 0; i < 4; i++)
+  {
+    for (let j = 0; j < 4; j++)
+    {
+      let nextshape = (uitype == "next" ? getForm(nextBlock[t]) : getForm(stockBlock));
+      if (nextshape[i][j] != 0 && (uitype == "next" || stockBlock > -1))
+      {
+        drawRect(tx + j * s, ty + i * s, s ,s);
+        fillColor(uitype == "next" ? blockColor(nextBlock[t] + 1, true) : blockColor(stockBlock + 1, true));
+        drawRect(tx + (s - s * 0.7) / 2 + j * s, ty + (s - s * 0.7) / 2 + i * s, s * 0.7, s * 0.7);
+        fillColor(uitype == "next" ? blockColor(nextBlock[t] + 1, false) : blockColor(stockBlock + 1, false));
+      }
+    }
+  }
+}
+
+function blockdraw(x, y, c)
+{
+  //drawRect((150 + j * 30) + 1, (30 + i * 30) + 1, 28 ,28);
+  //(blockColor(blockData[i][j]));
+  drawRect(x + 1, y + 1, 28 ,28);
+  fillColor(blockColor(c, true));
+  drawRect(x + 5, y + 5, 20 ,20);
+  fillColor(blockColor(c, false));
 }
 
 function time_UI()
@@ -74,6 +149,41 @@ function flamelate()
   display();
 }
 
+function getForm(n)
+{
+  switch (n)
+  {
+    case 0:
+      return shape_O;
+      break;
+    case 1:
+      return shape_I;
+      break;
+    case 2:
+      return shape_S;
+      break;
+    case 3:
+      return shape_Z;
+      break;
+    case 4:
+      return shape_L;
+      break;
+    case 5:
+      return shape_J;
+      break;
+    case 6:
+      return shape_T;
+      break;
+    case 7:
+      return shape_C;
+      break;
+    case 8:
+    default:
+      return shape_1;
+      break;
+  }
+}
+
 function display()
 {
   for (let i = 0; i < 18; i++)
@@ -82,8 +192,9 @@ function display()
     {
       if (blockData[i][j] != 0)
       {
-        drawRect((150 + j * 30) + 1, (30 + i * 30) + 1, 28 ,28);
-        fillColor(blockColor(blockData[i][j]));
+        blockdraw((150 + j * 30), (30 + i * 30), blockData[i][j]);
+        //drawRect((150 + j * 30) + 1, (30 + i * 30) + 1, 28 ,28);
+        //fillColor(blockColor(blockData[i][j]));
       }
       else
       {
@@ -101,8 +212,9 @@ function displayNowblock(i, j)
     {
       if (i == y + k && j == x + l && shape[k][l] != 0)
       {
-        drawRect((150 + j * 30) + 1, (30 + i * 30) + 1, 28 ,28);
-        fillColor(blockColor(nowblockType));
+        blockdraw((150 + j * 30), (30 + i * 30), nowblockType);
+        //drawRect((150 + j * 30) + 1, (30 + i * 30) + 1, 28 ,28);
+        //fillColor(blockColor(nowblockType));
       }
     }
   }
@@ -129,6 +241,50 @@ function confirm()
         blockData[y + i][x + j] = shape[i][j];
         blockData[y + i][x + j] = shape[i][j];
       }
+    }
+  }
+}
+
+function lienEraseCheck()
+{
+  let eraseNum = 0;
+  for (let i = 0; i < 18; i++)
+  {
+    let check = true;
+    for (let j = 0; j < 10; j++)
+    {
+      if (blockData[i][j] == 0)
+      {
+        check = false;
+        break;
+      }
+    }
+    if (check == true && eraseNum < 4)
+    {
+      lineerase[eraseNum] = i;
+      eraseNum++;
+    }
+  }
+}
+
+function lineEraseAnimation()
+{
+  for (let i = 0; i < 18; i++)
+  {
+    for (let j = 0; j < 4; j++)
+    {
+      if (lineerase[j] == i) lineErase(i);
+    }
+  }
+}
+
+function lineErase(n)
+{
+  for (let i = 0; i < n; i++)
+  {
+    for (let j = 0; j < 10; j++)
+    {
+      
     }
   }
 }
@@ -222,11 +378,41 @@ function rotate(direction)
   }
 }
 
+function reserve(first = false)
+{
+  if (first == true)
+  {
+    for (let i = 0; i < 3; i++)
+    {
+      let n = Math.floor(Math.random() * 10);
+      nextBlock[i] = n;
+    }
+  }
+  let form = nextBlock[0];
+  nowblockType = form + 1;
+  shape = getForm(form);
+
+  nextBlock[0] = nextBlock[1];
+  nextBlock[1] = nextBlock[2];
+  nextBlock[2] = Math.floor(Math.random() * 10);
+  stock = false;
+}
+
+function stockTrigger()
+{
+  //console.log("blockTypeTrigger:" + nowblockType);
+  stock = true;
+  let temp = stockBlock;
+  stockBlock = nowblockType - 1;
+  if (temp > -1) generation(false, temp);
+  else generation();
+}
+
 function gamesetup()
 {
   timeReset();
   flame = 0, interval =  4;
-  generation();
+  generation(true);
   for (let i = 0; i < blockData.length; i++)
   {
     for (let j = 0; j < blockData[0].length; j++)
@@ -237,40 +423,19 @@ function gamesetup()
   if (DEBUG == true) console.log(blockData);
 }
 
-function generation()
+function generation(first = false, usestock = -1)
 {
   x = 3, y = -4;
-  var form = Math.floor(Math.random() * 7);
+  if (usestock == -1) reserve(first);
+  else 
+  {
+    nowblockType = usestock + 1;
+    shape = getForm(usestock);
+  }
   control = true;
   evacuationTime = 0;
   evacuationAllTime = 0;
-  
-  nowblockType = form + 1;
-  switch (form)
-  {
-    case 0:
-      shape = shape_O;
-      break;
-    case 1:
-      shape = shape_I;
-      break;
-    case 2:
-      shape = shape_S;
-      break;
-    case 3:
-      shape = shape_Z;
-      break;
-    case 4:
-      shape = shape_L;
-      break;
-    case 5:
-      shape = shape_J;
-      break;
-    case 6:
-    default:
-      shape = shape_T;
-      break;
-  }
+  //console.log("blockType:" + nowblockType);
   //console.log(shape);
 }
 
