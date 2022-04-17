@@ -1,4 +1,4 @@
-var DEBUG = true;
+var DEBUG = false;
 var DEBUG_BASIC = false;
 
 var canvas = document.getElementById("Canvas");
@@ -56,6 +56,7 @@ function keyDown(e)
       if (e.keyCode == 40) speedfall(true);
       if (e.keyCode == 88) rotate("right");
       if (e.keyCode == 90) rotate("left");
+      if (e.keyCode == 81) gamedebug_stop = true;
       break;
   }
 }

@@ -1,4 +1,5 @@
 var time = 60.0;
+gamedebug_stop = false;
 
 var blockData = Array(18);
 for (let i = 0; i < blockData.length; i++)
@@ -225,7 +226,7 @@ function gravity()
   if (collision(x, y + 1, shape) == 0)
   {
     control = true;
-    y++;
+    if (gamedebug_stop == false) y++;
   }
   else control = false;
 }
@@ -243,48 +244,33 @@ function confirm()
       }
     }
   }
+  //console.log(blockData);
+  lienEraseCheck();
 }
 
 function lienEraseCheck()
 {
-  let eraseNum = 0;
+  //let eraseNum = 0;
   for (let i = 0; i < 18; i++)
   {
-    let check = true;
-    for (let j = 0; j < 10; j++)
+    let check = 0;
+    while (check < 10)
     {
-      if (blockData[i][j] == 0)
+      if (blockData[i][check] == 0)
       {
-        check = false;
         break;
       }
+      check++;
     }
-    if (check == true && eraseNum < 4)
+    if (check == 10)
     {
-      lineerase[eraseNum] = i;
-      eraseNum++;
-    }
-  }
-}
-
-function lineEraseAnimation()
-{
-  for (let i = 0; i < 18; i++)
-  {
-    for (let j = 0; j < 4; j++)
-    {
-      if (lineerase[j] == i) lineErase(i);
-    }
-  }
-}
-
-function lineErase(n)
-{
-  for (let i = 0; i < n; i++)
-  {
-    for (let j = 0; j < 10; j++)
-    {
-      
+      for (let j = i; j > 0; j--)
+      {
+        for (let k = 0; k < 10; k++)
+        {
+          blockData[j][k] = blockData[j - 1][k];
+        }
+      }
     }
   }
 }
