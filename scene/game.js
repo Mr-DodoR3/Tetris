@@ -28,8 +28,6 @@ var interval;
 var evacuationTime;
 var evacuationAllTime;
 
-let lineerase = [-1, -1, -1, -1];
-
 function gamebackground()
 {
   //background("#333333");
@@ -244,13 +242,11 @@ function confirm()
       }
     }
   }
-  //console.log(blockData);
   lienEraseCheck();
 }
 
 function lienEraseCheck()
 {
-  //let eraseNum = 0;
   for (let i = 0; i < 18; i++)
   {
     let check = 0;
