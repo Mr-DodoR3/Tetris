@@ -149,7 +149,6 @@ function main()
 setup();
 addEventListener('load', main(), false);
 
-
 function test()
 {
   let temp_array = 
