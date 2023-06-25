@@ -73,7 +73,7 @@ const effect = class {
 
 var effects = [];
 
-var time = 90.0;
+var time = 60.0;
 var score = 0;
 gamedebug_stop = false;
 
@@ -520,7 +520,7 @@ function gamesetup()
 {
   timeReset();
   flame = 0, interval =  4;
-  time = 90.0;
+  time = 60.0;
   score = 0;
   generation(true);
   for (let i = 0; i < blockData.length; i++)
