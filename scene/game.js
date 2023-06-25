@@ -1,5 +1,84 @@
-var time = 60.0;
+const effect = class {
+  constructor(x, y, c, type=0)
+  {
+    this.x = 150 + x * 30;
+    this.y = 30 + y * 30;
+    this.c = c;
+    this.a = 100;
+    this.type = type;
+    if (type == 1)
+    {
+      this.vecX = Math.floor(Math.random() * 5) - 2;
+      this.vecY = Math.floor(Math.random() * 5) - 2;
+    }
+    else
+    {
+      this.vecX = 0;
+      this.vecY = 0;
+    }
+    this.colorNum();
+  }
+
+  colorNum()
+  {
+    switch(this.c)
+    {
+      case 1:
+        this.c = "rgba(255,255,204,"
+        break;
+      case 2:
+        this.c = "rgba(153,255,255,"
+        break;
+      case 3:
+        this.c = "rgba(255,102,102,"
+        break;
+      case 4:
+        this.c = "rgba(153,255,153,"
+        break;
+      case 5:
+        this.c = "rgba(255,204,102,"
+        break;
+      case 6:
+        this.c = "rgba(102,102,255,"
+        break;
+      case 7:
+        this.c = "rgba(255,153,255,"
+        break;
+      case 8:
+        this.c = "rgba(153,255,204,"
+        break;
+      case 9:
+        this.c = "rgba(238,238,238,"
+        break;
+    }
+  }
+
+  effectDraw()
+  {
+    this.s = Math.abs(this.a - 100) / 4;
+    drawRect(this.x + 1 - (this.s / 2), this.y + 1 - (this.s / 2), 28 + this.s, 28 + this.s);
+    fillColor(this.c + (this.a / 100) +")");
+    drawRect(this.x + 5 - (this.s / 2), this.y + 5 - (this.s / 2), 20 ,20);
+    fillColor(this.c + (this.a / 100) +")");
+    this.x += this.vecX;
+    this.y += this.vecY;
+    this.a -= this.type == 1 ? 3 : 4;
+    if (this.a > 0)
+      return true;
+    else
+      return false;
+    //fillColor(blockColor(this.c, false) + this.alpha);
+  }
+}
+
+var effects = [];
+
+var time = 90.0;
+var score = 0;
 gamedebug_stop = false;
+
+var point = [ 100, 300, 450,  600 ]
+var point_magnification = 1.0;
 
 var blockData = Array(18);
 for (let i = 0; i < blockData.length; i++)
@@ -57,6 +136,14 @@ function gamebackground()
   fillColor("#333333");
   drawRect(450, 0, 150, 600);
   fillColor("#333333");
+
+  // console.log(effects.length);
+  for (let i = 0; i < effects.length; i++)
+  {
+    let rm = effects[i].effectDraw();
+    if (!rm)
+      effects.splice(i, i);
+  }
 
   nextBlockUI();
 }
@@ -133,7 +220,13 @@ function time_UI()
 {
   if (timeDecimalCount() == true) time -= 0.1;
   align("left");
-  writeText("Time:" + time.toFixed(1), 460, 50, 24, "#FFFFFF");
+  writeText("Time:" + (time > 0.0 ? time.toFixed(1) : (0).toFixed(1)), 460, 300, 24, "#FFFFFF");
+}
+
+function score_UI()
+{
+  align("left");
+  writeText("Score:" + score, 460, 340, 24, "#FFFFFF");
 }
 
 function flamelate()
@@ -235,10 +328,27 @@ function confirm()
   {
     for (let j = 0; j < 4; j++)
     {
-      if (shape[i][j] != 0 && y >= 0 && y + i < 18)
+      if (shape[i][j] != 0)
       {
-        blockData[y + i][x + j] = shape[i][j];
-        blockData[y + i][x + j] = shape[i][j];
+        if (y >= -1 && y + i < 18)
+        {
+          try
+          {
+            effects.push(new effect(x + j, y + i, shape[i][j], 0));
+            blockData[y + i][x + j] = shape[i][j];
+            blockData[y + i][x + j] = shape[i][j];
+          }
+          catch
+          {
+            console.log("GAME OVER");
+            time = 0.0;
+          }
+        }
+        else
+        {
+          console.log("GAME OVER");
+          time = 0.0;
+        }
       }
     }
   }
@@ -247,6 +357,8 @@ function confirm()
 
 function lienEraseCheck()
 {
+  let erasePoint = [];
+  let eraseLine = 0;
   for (let i = 0; i < 18; i++)
   {
     let check = 0;
@@ -260,14 +372,28 @@ function lienEraseCheck()
     }
     if (check == 10)
     {
+      eraseLine++;
       for (let j = i; j > 0; j--)
       {
         for (let k = 0; k < 10; k++)
         {
-          blockData[j][k] = blockData[j - 1][k];
+          if (j == i)
+            effects.push(new effect(k, i, blockData[j][k], 1));
+            blockData[j][k] = blockData[j - 1][k];
         }
       }
     }
+  }
+  if (eraseLine == 0)
+  {
+    point_magnification = 1.0;
+  }
+  else
+  {
+    if (time > 0)
+      score += Math.floor(point[eraseLine-1] * point_magnification);
+    if (point_magnification < 2.0)
+      point_magnification += 0.1;
   }
 }
 
@@ -394,6 +520,8 @@ function gamesetup()
 {
   timeReset();
   flame = 0, interval =  4;
+  time = 90.0;
+  score = 0;
   generation(true);
   for (let i = 0; i < blockData.length; i++)
   {
@@ -424,8 +552,6 @@ function generation(first = false, usestock = -1)
 function game()
 {
   background("#333333");
-  time_UI();
-  flamelate();
   if (control == false) 
   {
     evacuationTime++;
@@ -437,4 +563,17 @@ function game()
     }
   }
   gamebackground();
+  time_UI();
+  score_UI();
+  if (time > 0)
+  {
+    flamelate();
+  }
+  else
+  {
+    if (changeChack == 0)
+    {
+      sceneChangeTrriger(2);
+    }
+  }
 }

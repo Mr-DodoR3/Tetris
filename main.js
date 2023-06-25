@@ -12,24 +12,38 @@ var mode = 0;
 
 var backgorundData = Array(10);
 
-function title()
+var canvas = document.getElementById('Canvas');
+canvas.addEventListener('mousewheel' , function(e){
+  e.preventDefault();
+});
+
+function backgroundImage()
 {
-  for (let i = 0; i < 60; i++)
+  for (let i = 0; i < 10; i++)
   {
-    for (let j = 0; j < 60; j++)
+    for (let j = 0; j < 10; j++)
     {
       drawRect(i*60, j*60, 60 ,60);
-      fillColor(blockColor(backgorundData[i][j], true));
+      let ctxt = blockColor(backgorundData[i][j], true) + "66";
+      fillColor(ctxt);
+      ctxt += "99";
       drawRect(i*60 + 5, j*60 + 5, 50 ,50);
-      fillColor(blockColor(backgorundData[i][j], false));
+      ctxt = blockColor(backgorundData[i][j], true) + "99";
+      fillColor(ctxt);
     }
   }
+}
+
+function title()
+{
+  backgroundImage();
 
   align("center");
   for (let i = 0; i < 15; i++)
   {
-    writeText("TETRIS" , 300, 180, 48 + i*5, i % 2 == 0 ? "black" : "white");
+    writeText("METRIS" , 300, 180, 48 + i*5, "black");
   }
+  writeText("METRIS" , 300, 180, 48 + 75, "white");
 
   let buttontext = ["スタート", "やり方"];
   for (let i = 0; i < 2; i++)
@@ -62,7 +76,7 @@ function keyDown(e)
     case 0:
       if (e.keyCode == 38) mode = (mode > 0 ? mode - 1 : 1);
       if (e.keyCode == 40) mode = (mode < 1 ? mode + 1 : 0);
-      if (e.keyCode == 32) scene = (mode + 1), gamesetup();
+      if (e.keyCode == 32) mode = sceneChangeTrriger((mode == 0 ? 1 : 3));
       break;
     case 1:
       if (e.keyCode == 32 && stock == false) stockTrigger();
@@ -73,6 +87,12 @@ function keyDown(e)
       if (e.keyCode == 88) rotate("right");
       if (e.keyCode == 90) rotate("left");
       if (e.keyCode == 81) gamedebug_stop = true;
+      break;
+    case 2:
+      if (e.keyCode == 32) sceneChangeTrriger(0);
+      break;
+    case 3:
+      if (e.keyCode == 32) sceneChangeTrriger(0);
       break;
   }
 }
@@ -114,9 +134,15 @@ function main()
       game();
       break;
     case 2:
+      result();
+      break;
+    case 3:
+      manual();
       break;
   }
 
+  if (!(changeChack == 0))
+    sceneChange();
   requestAnimationFrame(main);
 }
 
